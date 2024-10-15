@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -15,22 +15,18 @@ class SearchForm(FlaskForm):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = SearchForm()
-    videos = []
-    page = request.args.get('page', 1, type=int)
-    per_page = 5  # 每頁顯示的影片數量
-
     if form.validate_on_submit():
         keyword = form.keyword.data
         flash(f'搜尋 "{keyword}" 的結果', 'success')
-        return redirect(url_for('results', keyword=keyword, page=1))
+        return redirect(url_for('results', keyword=keyword))
 
-    return render_template('index.html', form=form, videos=videos, page=page, total_pages=0)
+    return render_template('index.html', form=form)
 
 @app.route('/results')
 def results():
     keyword = request.args.get('keyword')
     page = request.args.get('page', 1, type=int)
-    per_page = 5  # 每頁顯示的影片數量
+    per_page = 5
 
     search = Search(keyword)
     videos = search.results
@@ -42,20 +38,20 @@ def results():
 
     return render_template('index.html', form=SearchForm(), videos=videos, page=page, total_pages=total_pages)
 
-@app.route('/watch/<path:video_url>/<int:video_index>')
-def watch(video_url, video_index):
-    video_id = video_url.split('v=')[-1]  # 从URL中提取视频ID
-    return render_template('watch.html', video_id=video_id, video_index=video_index)
+@app.route('/watch/<path:video_url>')
+def watch(video_url):
+    video_id = video_url.split('v=')[-1]
+    return render_template('watch.html', video_id=video_id)
 
 @app.route('/download/<int:video_index>', methods=['POST'])
 def download(video_index):
     keyword = request.args.get('keyword')
     search = Search(keyword)
-    video = search.results[video_index]  # 根据 video_index 获取视频对象
+    video = search.results[video_index]
     stream = video.streams.get_highest_resolution()
     stream.download()
     flash('影片下載成功！', 'success')
-    return redirect(url_for('results', keyword=keyword, page=1))
+    return redirect(url_for('results', keyword=keyword))
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=10000)
+    app.run(debug=True,port=10000, host='0.0.0.0')
