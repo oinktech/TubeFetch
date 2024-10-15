@@ -1,54 +1,47 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from pytube import YouTube
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from youtube_dl import YoutubeDL, DownloadError
+import logging
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a secure key
+app.secret_key = 'your_secret_key'  # 請更換為安全的密鑰
 
-class SearchForm(FlaskForm):  # Change here to FlaskForm
-    query = StringField('YouTube Search', validators=[DataRequired()])
-    submit = SubmitField('Search')
+# 設定日誌記錄
+logging.basicConfig(level=logging.INFO)
 
-# Initialize search history
-search_history = []
+class SearchForm(FlaskForm):
+    keyword = StringField('請輸入 YouTube 關鍵字:', validators=[DataRequired()])
+    submit = SubmitField('搜索')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    form = SearchForm(request.form)
-    videos = []
+    form = SearchForm()
+    video_url = None
+    if form.validate_on_submit():
+        keyword = form.keyword.data
+        video_url = search_youtube(keyword)
+        if not video_url:
+            flash('未找到視頻，請嘗試其他關鍵字。', 'danger')
+            return redirect(url_for('index'))
+    return render_template('index.html', form=form, video_url=video_url)
 
-    if request.method == 'POST' and form.validate():
-        query = form.query.data
-        search_history.append(query)  # Save search query to history
-        try:
-            with YoutubeDL({'default_search': 'ytsearch', 'max_downloads': 5}) as ydl:
-                result = ydl.extract_info(query, download=False)
-                videos = result['entries']
-        except Exception as e:
-            flash(f'An error occurred: {str(e)}')
+def search_youtube(keyword):
+    # 使用關鍵字生成搜索 URL，這裡可以自訂更複雜的搜索邏輯
+    search_url = f"https://www.youtube.com/results?search_query={keyword}"
+    return search_url
 
-    return render_template('index.html', form=form, videos=videos, search_history=search_history)
-
-@app.route('/download/<video_id>')
-def download(video_id):
-    ydl_opts = {
-        'format': 'best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-        'outtmpl': '%(title)s.%(ext)s',
-    }
+@app.route('/download', methods=['POST'])
+def download():
+    video_url = request.form['video_url']
     try:
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_id])
-        flash('Download successful!')
-    except DownloadError:
-        flash('Download failed. Please try again.')
-
+        yt = YouTube(video_url)
+        stream = yt.streams.filter(progressive=True, file_extension='mp4').first()
+        stream.download()
+        flash('視頻已成功下載！', 'success')
+    except Exception as e:
+        flash(f'下載失敗: {str(e)}', 'danger')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
