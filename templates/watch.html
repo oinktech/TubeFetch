@@ -15,9 +15,13 @@
                 frameborder="0" allowfullscreen></iframe>
     </div>
     <div class="text-center mt-3">
+        {% if video_index is not none %}
         <form method="POST" action="{{ url_for('download', video_index=video_index, keyword=request.args.get('keyword')) }}">
             <button type="submit" class="btn btn-warning">下載最高畫質影片</button>
         </form>
+        {% else %}
+        <p>未找到视频索引。</p>
+        {% endif %}
     </div>
     <a href="{{ url_for('index') }}" class="btn btn-primary mt-4">返回首頁</a>
 </div>
