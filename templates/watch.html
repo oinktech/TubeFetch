@@ -8,17 +8,20 @@
 </head>
 <body>
 <div class="container">
-    <h1 class="text-center mt-4">觀看影片</h1>
-    <div class="embed-responsive embed-responsive-16by9">
-        <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/{{ video_id.split('=')[-1] }}" allowfullscreen></iframe>
+    <h1 class="mt-4 text-center">觀看影片</h1>
+    <div class="text-center">
+        <iframe width="560" height="315" 
+                src="https://www.youtube.com/embed/{{ video_id }}" 
+                frameborder="0" allowfullscreen></iframe>
     </div>
-    <div class="text-center mt-4">
+    <div class="text-center mt-3">
         <form method="POST" action="{{ url_for('download', video_index=loop.index0, keyword=request.args.get('keyword')) }}">
             <button type="submit" class="btn btn-warning">
                 <i class="fas fa-download"></i> 下載最高畫質影片
             </button>
         </form>
     </div>
+    <a href="{{ url_for('index') }}" class="btn btn-primary mt-4">返回首頁</a>
 </div>
 </body>
 </html>
