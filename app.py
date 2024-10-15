@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from pytube import Search, YouTube
+from pytube import Search
 from math import ceil
 
 app = Flask(__name__)
@@ -42,10 +42,10 @@ def results():
 
     return render_template('index.html', form=SearchForm(), videos=videos, page=page, total_pages=total_pages)
 
-@app.route('/watch/<path:video_url>')
-def watch(video_url):
+@app.route('/watch/<path:video_url>/<int:video_index>')
+def watch(video_url, video_index):
     video_id = video_url.split('v=')[-1]  # 从URL中提取视频ID
-    return render_template('watch.html', video_id=video_id)
+    return render_template('watch.html', video_id=video_id, video_index=video_index)
 
 @app.route('/download/<int:video_index>', methods=['POST'])
 def download(video_index):
