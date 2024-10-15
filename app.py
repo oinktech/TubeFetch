@@ -1,47 +1,48 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from pytube import YouTube
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-import logging
+from pytube import Search
+from math import ceil
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # 請更換為安全的密鑰
-
-# 設定日誌記錄
-logging.basicConfig(level=logging.INFO)
+app.config['SECRET_KEY'] = 'your_secret_key'
 
 class SearchForm(FlaskForm):
-    keyword = StringField('請輸入 YouTube 關鍵字:', validators=[DataRequired()])
-    submit = SubmitField('搜索')
+    keyword = StringField('關鍵字', validators=[DataRequired()])
+    submit = SubmitField('搜尋')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = SearchForm()
-    video_url = None
+    videos = []
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # 每頁顯示的影片數量
+
     if form.validate_on_submit():
         keyword = form.keyword.data
-        video_url = search_youtube(keyword)
-        if not video_url:
-            flash('未找到視頻，請嘗試其他關鍵字。', 'danger')
-            return redirect(url_for('index'))
-    return render_template('index.html', form=form, video_url=video_url)
+        flash(f'搜尋 "{keyword}" 的結果', 'success')
+        search = Search(keyword)
+        videos = search.results
+        total_videos = len(videos)
+        total_pages = ceil(total_videos / per_page)
+        start = (page - 1) * per_page
+        end = start + per_page
+        videos = videos[start:end]
+        return render_template('index.html', form=form, videos=videos, page=page, total_pages=total_pages)
 
-def search_youtube(keyword):
-    # 使用關鍵字生成搜索 URL，這裡可以自訂更複雜的搜索邏輯
-    search_url = f"https://www.youtube.com/results?search_query={keyword}"
-    return search_url
+    return render_template('index.html', form=form, videos=videos, page=page, total_pages=0)
 
-@app.route('/download', methods=['POST'])
-def download():
-    video_url = request.form['video_url']
-    try:
-        yt = YouTube(video_url)
-        stream = yt.streams.filter(progressive=True, file_extension='mp4').first()
-        stream.download()
-        flash('視頻已成功下載！', 'success')
-    except Exception as e:
-        flash(f'下載失敗: {str(e)}', 'danger')
+@app.route('/watch/<video_id>')
+def watch(video_id):
+    return render_template('watch.html', video_id=video_id)
+
+@app.route('/download/<video_id>', methods=['POST'])
+def download(video_id):
+    video = videos[int(video_id)]  # 根据 video_id 获取视频对象
+    stream = video.streams.get_highest_resolution()
+    stream.download()
+    flash('影片下載成功！', 'success')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
