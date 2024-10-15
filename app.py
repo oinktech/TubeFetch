@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from youtube_dl import YoutubeDL, DownloadError
-from wtforms import Form, StringField, SubmitField
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from youtube_dl import YoutubeDL, DownloadError
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure key
 
-class SearchForm(Form):
+class SearchForm(FlaskForm):  # Change here to FlaskForm
     query = StringField('YouTube Search', validators=[DataRequired()])
     submit = SubmitField('Search')
 
@@ -51,4 +52,4 @@ def download(video_id):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True,port=10000, host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0',port=10000)
