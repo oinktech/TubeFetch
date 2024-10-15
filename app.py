@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from pytube import Search
+from pytube import Search, YouTube
 from math import ceil
 
 app = Flask(__name__)
@@ -22,10 +22,6 @@ def index():
     if form.validate_on_submit():
         keyword = form.keyword.data
         flash(f'搜尋 "{keyword}" 的結果', 'success')
-        search = Search(keyword)
-        videos = search.results
-        
-        # 将结果存入 session 以便在重定向后使用
         return redirect(url_for('results', keyword=keyword, page=1))
 
     return render_template('index.html', form=form, videos=videos, page=page, total_pages=0)
@@ -46,19 +42,20 @@ def results():
 
     return render_template('index.html', form=SearchForm(), videos=videos, page=page, total_pages=total_pages)
 
-@app.route('/watch/<video_id>')
-def watch(video_id):
-    # 提取视频 ID，确保只传递视频 ID 而不是完整的 URL
+@app.route('/watch/<path:video_url>')
+def watch(video_url):
+    video_id = video_url.split('v=')[-1]  # 从URL中提取视频ID
     return render_template('watch.html', video_id=video_id)
 
 @app.route('/download/<int:video_index>', methods=['POST'])
 def download(video_index):
-    search = Search(request.args.get('keyword'))
+    keyword = request.args.get('keyword')
+    search = Search(keyword)
     video = search.results[video_index]  # 根据 video_index 获取视频对象
     stream = video.streams.get_highest_resolution()
     stream.download()
     flash('影片下載成功！', 'success')
-    return redirect(url_for('results', keyword=request.args.get('keyword'), page=1))
+    return redirect(url_for('results', keyword=keyword, page=1))
 
 if __name__ == '__main__':
-    app.run(debug=True,port=10000, host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0',port=10000)
