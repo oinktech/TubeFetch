@@ -43,18 +43,9 @@
             width: 100%;
             border-radius: 5px;
         }
-        .input-group {
-            position: relative;
-        }
-        .input-group .input-group-text {
-            position: absolute;
-            left: 0;
-            height: 100%;
-            border: none;
-            background-color: transparent;
-            padding: 0 10px;
-            color: #6c757d;
-            pointer-events: none;
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
         }
         footer {
             text-align: center;
@@ -96,13 +87,22 @@
                 <a href="{{ url_for('watch', video_id=video.watch_url) }}" class="btn btn-success">
                     <i class="fas fa-eye"></i> 觀看影片
                 </a>
-                <form method="POST" action="{{ url_for('download', video_id=video.watch_url) }}">
+                <form method="POST" action="{{ url_for('download', video_id=loop.index0) }}">
                     <button type="submit" class="btn btn-warning">
                         <i class="fas fa-download"></i> 下載最高畫質影片
                     </button>
                 </form>
             </div>
         {% endfor %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('index', page=p, keyword=form.keyword.data) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
     {% endif %}
 </div>
 <footer>
