@@ -1,4 +1,4 @@
 Flask
-youtube-dl
+pytube
 Flask-WTF
 werkzeug
