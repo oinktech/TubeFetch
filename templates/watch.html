@@ -3,20 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ video.title }} - 觀看影片</title>
+    <title>觀看影片</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-<div class="container mt-5">
-    <h1>{{ video.title }}</h1>
-    <iframe width="100%" height="400" src="{{ video.embed_url }}" frameborder="0" allowfullscreen></iframe>
-    <form method="POST" action="{{ url_for('download', video_id=video.watch_url) }}" class="mt-3">
-        <button type="submit" class="btn btn-warning btn-block">
-            <i class="fas fa-download"></i> 下載最高畫質影片
-        </button>
-    </form>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary btn-block mt-3">返回</a>
+<div class="container">
+    <h1 class="text-center mt-4">觀看影片</h1>
+    <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/{{ video_id.split('=')[-1] }}" allowfullscreen></iframe>
+    </div>
+    <div class="text-center mt-4">
+        <form method="POST" action="{{ url_for('download', video_index=loop.index0, keyword=request.args.get('keyword')) }}">
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-download"></i> 下載最高畫質影片
+            </button>
+        </form>
+    </div>
 </div>
 </body>
 </html>
