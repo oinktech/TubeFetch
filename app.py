@@ -48,6 +48,7 @@ def results():
 
 @app.route('/watch/<video_id>')
 def watch(video_id):
+    # 提取视频 ID，确保只传递视频 ID 而不是完整的 URL
     return render_template('watch.html', video_id=video_id)
 
 @app.route('/download/<int:video_index>', methods=['POST'])
