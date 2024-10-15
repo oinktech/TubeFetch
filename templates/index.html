@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .video-item {
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .video-thumbnail {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Video Search</h1>
+        <form method="POST" action="/">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.query.label(class="form-label") }} 
+                {{ form.query(class="form-control", size=40) }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-warning" role="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if videos %}
+            <h2>Search Results:</h2>
+            <ul class="list-unstyled">
+            {% for video in videos %}
+                <li class="video-item">
+                    <img src="{{ video.thumbnail }}" alt="Thumbnail" class="video-thumbnail">
+                    <h5>
+                        <a href="{{ video.webpage_url }}" target="_blank">{{ video.title }}</a>
+                    </h5>
+                    <p>Duration: {{ video.duration | round }} seconds</p>
+                    <a href="{{ url_for('download', video_id=video.id) }}" class="btn btn-success">Download</a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h3>Search History:</h3>
+        <ul class="list-unstyled">
+        {% for history in search_history %}
+            <li>{{ history }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
