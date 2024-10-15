@@ -87,7 +87,7 @@
                 <a href="{{ url_for('watch', video_id=video.watch_url) }}" class="btn btn-success">
                     <i class="fas fa-eye"></i> 觀看影片
                 </a>
-                <form method="POST" action="{{ url_for('download', video_id=loop.index0) }}">
+                <form method="POST" action="{{ url_for('download', video_index=loop.index0, keyword=request.args.get('keyword')) }}">
                     <button type="submit" class="btn btn-warning">
                         <i class="fas fa-download"></i> 下載最高畫質影片
                     </button>
@@ -98,7 +98,7 @@
             <ul class="pagination">
                 {% for p in range(1, total_pages + 1) %}
                     <li class="page-item {% if p == page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('index', page=p, keyword=form.keyword.data) }}">{{ p }}</a>
+                        <a class="page-link" href="{{ url_for('results', keyword=request.args.get('keyword'), page=p) }}">{{ p }}</a>
                     </li>
                 {% endfor %}
             </ul>
