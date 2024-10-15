@@ -41,7 +41,9 @@ def results():
 @app.route('/watch/<path:video_url>')
 def watch(video_url):
     video_id = video_url.split('v=')[-1]
-    return render_template('watch.html', video_id=video_id)
+    video_index = request.args.get('video_index', type=int)  # 获取 video_index
+    return render_template('watch.html', video_id=video_id, video_index=video_index)
+
 
 @app.route('/download/<int:video_index>', methods=['POST'])
 def download(video_index):
